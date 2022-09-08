@@ -1,0 +1,9 @@
+@import "/node_modules/ol/ol.css";
+
+html, body {
+  margin: 0;
+  height: 100%;
+}
+/* ::v-deep :root {
+  --el-header-height: 30px!important;
+} */

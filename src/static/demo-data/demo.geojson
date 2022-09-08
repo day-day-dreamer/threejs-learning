@@ -1,0 +1,160 @@
+{
+  "type": "FeatureCollection",
+  "name": "wanda",
+  "crs": {
+    "type": "name",
+    "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万达影城(增城万达广场店)",
+        "lng": 113.821841,
+        "lat": 23.281847,
+        "address": "广州市增城区荔城街增城大道69号万达广场F4"
+      },
+      "geometry": { "type": "Point", "coordinates": [113.821841, 23.281847] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万达影城(南沙万达广场店)",
+        "lng": 113.538016,
+        "lat": 22.800097,
+        "address": "广州市南沙区双山大道3号万达广场4层"
+      },
+      "geometry": { "type": "Point", "coordinates": [113.538016, 22.800097] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万达影城(万胜广场店)",
+        "lng": 113.388917,
+        "lat": 23.103397,
+        "address": "广东省广州市海珠区新港东路1236号万胜广场五层"
+      },
+      "geometry": { "type": "Point", "coordinates": [113.388917, 23.103397] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万达影城(融创茂店)",
+        "lng": 113.240693,
+        "lat": 23.431699,
+        "address": "广州市花都区凤凰北路63号融创茂购物中心3楼"
+      },
+      "geometry": { "type": "Point", "coordinates": [113.240693, 23.431699] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万达影城(广州番禺万达广场店)",
+        "lng": 113.356523,
+        "lat": 23.012651,
+        "address": "广州市番禺区南村镇汉溪大道东389号番禺万达广场4层"
+      },
+      "geometry": { "type": "Point", "coordinates": [113.356523, 23.012651] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万达影城（广州海珠万达广场店）",
+        "lng": 113.320582,
+        "lat": 23.089375,
+        "address": "广州市海珠区广州大道南978号601铺"
+      },
+      "geometry": { "type": "Point", "coordinates": [113.320582, 23.089375] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万达影城(白云万达广场店)",
+        "lng": 113.273067,
+        "lat": 23.178271,
+        "address": "广州市白云区云城东路503号万达广场娱乐楼三层"
+      },
+      "geometry": { "type": "Point", "coordinates": [113.273067, 23.178271] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万达影城(盈熙广场店)",
+        "lng": 113.293956,
+        "lat": 23.07975,
+        "address": "广州市海珠区江南大道南689-709号盈熙广场2层"
+      },
+      "geometry": { "type": "Point", "coordinates": [113.293956, 23.07975] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万达影城(萝岗万达店)",
+        "lng": 113.47294,
+        "lat": 23.174362,
+        "address": "广州市黄埔区开创大道与科丰路交汇处万达广场F4"
+      },
+      "geometry": { "type": "Point", "coordinates": [113.47294, 23.174362] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万达影城(万科广场店)",
+        "lng": 113.411133,
+        "lat": 23.172774,
+        "address": "广州市天河区华观路天河万科广场4层"
+      },
+      "geometry": { "type": "Point", "coordinates": [113.411133, 23.172774] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万达影城(广州万达影城番禺奥园广场店)",
+        "lng": 113.365178,
+        "lat": 22.929663,
+        "address": "广州市番禺区桥南街福德路281号奥园广场三楼万达影城"
+      },
+      "geometry": { "type": "Point", "coordinates": [113.365178, 22.929663] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万达影城(亚运城广场店)",
+        "lng": 113.482628,
+        "lat": 22.94697,
+        "address": "广东省广州市番禺区石楼镇康体路43号亚运城广场3楼"
+      },
+      "geometry": { "type": "Point", "coordinates": [113.482628, 22.94697] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "广州永和万达电影城(永和里享家店)",
+        "lng": 113.574286,
+        "lat": 23.201214,
+        "address": "广东省广州市黄埔区新业路23号"
+      },
+      "geometry": { "type": "Point", "coordinates": [113.574286, 23.201214] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万达国际影城(广州新塘万达广场店)",
+        "lng": 113.624387,
+        "lat": 23.158623,
+        "address": "广州市增城区新塘镇新福路9号新塘万达广场4F万达影城"
+      },
+      "geometry": { "type": "Point", "coordinates": [113.624387, 23.158623] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "万达影城",
+        "lng": 113.237061,
+        "lat": 23.430949,
+        "address": "广州市花都区蓝楹街融创茂"
+      },
+      "geometry": { "type": "Point", "coordinates": [113.237061, 23.430949] }
+    }
+  ]
+}
