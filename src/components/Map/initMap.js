@@ -28,6 +28,9 @@ const useInitMap = ({
     view: new View({
       center: fromLonLat(ORIGIN_POINT), // 地图中心
       zoom: 14,
+      // maxZoom: 28,
+      // minZoom: 1,
+      minResolution: 0.5,
     }),
   });
 

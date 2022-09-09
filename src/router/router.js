@@ -35,6 +35,21 @@ const routes = [
     name: "辐射圈",
     component: () => import("@/views/radiate/radiate.vue"),
   },
+  {
+    path: "/lineArrow",
+    name: "箭头线",
+    component: () => import("@/views/lineArrow/lineArrow.vue"),
+  },
+  {
+    path: "/regularShapes",
+    name: "规则几何图形",
+    component: () => import("@/views/regularShapes/regularShapes.vue"),
+  },
+  {
+    path: "/search",
+    name: "查询",
+    component: () => import("@/views/search/search.vue"),
+  },
 ];
 
 export default routes

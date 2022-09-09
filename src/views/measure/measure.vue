@@ -24,6 +24,7 @@ import { Polygon, LineString } from "ol/geom";
 
 import MainMap from "@/components/Map/map.vue";
 import RightSide from "@/components/RightSide/rightSide.vue";
+import { onUnmounted } from "vue";
 
 let map;
 const getInstance = ({mapInstance}) => {
@@ -150,15 +151,16 @@ const formatArea = (polygon) => {
   }
   return output;
 };
+const addClass = () => {
+  helpTooltipElement.classList.add("hidden");
+}
 /**
  *
  * @{type} 测量类型
  */
 const onDddInteraction = (type) => {
   map.on("pointermove", pointerMoveHandler);
-  map.getViewport().addEventListener("mouseout", () => {
-    helpTooltipElement.classList.add("hidden");
-  });
+  map.getViewport().addEventListener("mouseout", addClass, false);
   draw = new Draw({
     source: vectorSource,
     type,
@@ -257,6 +259,9 @@ const createMeasureTooltip = () => {
   });
   map.addOverlay(measureTooltip);
 };
+onUnmounted(() => {
+  map.getViewport().removeEventListener("mouseout", addClass, false)
+})
 </script>
 <style scoped>
 .btn {
