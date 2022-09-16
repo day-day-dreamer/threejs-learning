@@ -15,7 +15,7 @@ const vectorLayer = new VectorLayer({
 });
 const styleMark = new Style({
   image: new Icon({
-    src: "/src/static/demo-icon/icon-1.png",
+    src: "/static/demo-icon/icon-1.png",
     size: [100, 100],
   }),
 });

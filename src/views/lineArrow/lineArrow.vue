@@ -32,7 +32,7 @@ const styleFunction = (feature) => {
       new Style({
         geometry: new Point(end),
         image: new Icon({
-          src: "/src/static/demo-icon/icon-3.png",
+          src: "/static/demo-icon/icon-3.png",
           anchor: [0.5, 0.5],
           rotateWithView: true,
           rotation: -rotation,

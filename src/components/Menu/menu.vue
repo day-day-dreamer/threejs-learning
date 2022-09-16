@@ -1,17 +1,18 @@
 <script setup>
 import { ref } from "vue";
 import routes from "@/router/router.js";
-import {
-  Document,
-  Menu as IconMenu,
-  Location,
-  Setting,
-} from "@element-plus/icons-vue";
+import { Location } from "@element-plus/icons-vue";
 
 const isCollapse = ref(false);
 const onExpand = () => {
-  isCollapse.value = !isCollapse.value
-}
+  isCollapse.value = !isCollapse.value;
+  if (isCollapse.value) {
+    setTimeout(() => {
+      window.globalMap.updateSize();
+    }, 500);
+  }
+};
+const hash = location.hash?.slice(1);
 </script>
 <template>
   <el-menu
@@ -20,7 +21,8 @@ const onExpand = () => {
     class="el-menu-vertical-demo"
     text-color="#fff"
     :collapse="isCollapse"
-    default-openeds="[1]"
+    :default-openeds="[1]"
+    :default-active="hash"
     @open="handleOpen"
     @close="handleClose"
     router="true"
@@ -35,21 +37,25 @@ const onExpand = () => {
           v-for="item in routes"
           :key="item.path"
           :index="item.path"
-          >{{item.name}}</el-menu-item
+          >{{ item.name }}</el-menu-item
         >
       </el-menu-item-group>
     </el-sub-menu>
-  <el-icon class="expand-icon" :size="20" color="#fff" @click="onExpand">
-    <Expand v-if="isCollapse"/>
-    <Fold v-else />
-  </el-icon>
+    <el-icon class="expand-icon" :size="20" color="#fff" @click="onExpand">
+      <Expand v-if="isCollapse" />
+      <Fold v-else />
+    </el-icon>
   </el-menu>
 </template>
 <style scoped lang="less">
-.el-menu-vertical-demo {
+.el-menu-vertical-demo:not(.el-menu--collapse) {
   min-height: 100vh;
   position: relative;
   padding-bottom: 30px;
+  width: 200px;
+}
+.el-menu--collapse {
+  min-height: 100vh;
 }
 .expand-icon {
   display: block;

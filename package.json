@@ -19,6 +19,7 @@
     "unplugin-auto-import": "^0.11.2",
     "unplugin-vue-components": "^0.22.4",
     "vite": "^3.0.7",
+    "vite-plugin-require-transform": "^1.0.3",
     "vue-router": "^4.1.5"
   },
   "dependencies": {

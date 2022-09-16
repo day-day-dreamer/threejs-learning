@@ -2,7 +2,7 @@
   <div id="map"></div>
 </template>
 <script>
-import initMap from "./initMap.js"
+import initMap from "./initMap.js";
 
 export default {
   props: {
@@ -10,16 +10,21 @@ export default {
       type: Array,
       default: [],
     },
+    viewOpts: {
+      type: Object,
+      default: () => ({})
+    }
   },
   mounted() {
-    const {mapInstance, tileLayer} = initMap({
+    const { mapInstance, tileLayer } = initMap({
       target: "map",
       otherLayers: this.$props.otherLayers,
-    })
-    this.$emit("getInstance", {mapInstance, tileLayer})
-  }
-}
-
+      viewOpts: this.$props.viewOpts,
+    });
+    this.$emit("getInstance", { mapInstance, tileLayer });
+    window.globalMap = mapInstance;
+  },
+};
 </script>
 <style scoped>
 #map {

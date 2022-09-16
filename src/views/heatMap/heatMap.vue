@@ -23,11 +23,12 @@ import GeoJSON from "ol/format/GeoJSON";
 import { Heatmap as HeatmapLayer } from "ol/layer";
 import { ref } from "vue";
 
+
 const radius = ref(20);
 const blur = ref(25);
 
 const vectorSource = new VectorSource({
-  url: "/src/static/demo-data/Export_Output_2.json",
+  url: "/static/demo-data/Export_Output_2.json",
   format: new GeoJSON(),
 });
 //定义热力图图层

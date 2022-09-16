@@ -26,6 +26,14 @@ const vectorLayer = new VectorLayer({
 function addRandomFeature() {
   const geom = new Point(fromLonLat(ORIGIN_POINT));
   const feature = new Feature(geom);
+  // 给点设置样式
+  feature.setStyle(
+    new Style({
+      image: new CircleStyle({
+        radius: 0,
+      })
+    })
+  )
   source.addFeature(feature);
 }
 const duration = 3000;
@@ -45,7 +53,7 @@ function flash(feature, tileLayer, map) {
     const vectorContext = getVectorContext(event);
     const elapsedRatio = elapsed / duration;
     // radius will be 5 at start and 30 at end.
-    const radius = easeOut(elapsedRatio) * 25 + 5;
+    const radius = easeOut(elapsedRatio) * 30;
     const opacity = easeOut(1 - elapsedRatio);
 
     const style = new Style({

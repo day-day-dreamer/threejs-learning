@@ -9,6 +9,7 @@ import MainMap from "@/components/Map/map.vue";
 import RightSide from "@/components/RightSide/rightSide.vue";
 import { ORIGIN_POINT } from "@/common/constant.js";
 import useCreateMark from '@/hooks/useCreateMark.js'
+import { transform } from "ol/proj";
 
 let map;
 const getInstance = ({mapInstance}) => {
@@ -25,6 +26,14 @@ const createMark = () => {
   const { vectorLayer } = useCreateMark(coordinates)
   map.removeLayer(vectorLayer)
   map.addLayer(vectorLayer)
+  map.on("click", (event) => {
+    const feature = map.forEachFeatureAtPixel(event.pixel, (feature, layer) => {
+      return feature
+    })
+    if (feature) {
+      console.log("----", transform(feature.getGeometry().getCoordinates(), 'EPSG:3857','EPSG:4326'))
+    }
+  })
 };
 </script>
 <style scoped lang="less">

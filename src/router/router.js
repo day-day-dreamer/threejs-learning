@@ -50,6 +50,16 @@ const routes = [
     name: "查询",
     component: () => import("@/views/search/search.vue"),
   },
+  {
+    path: "/cluster",
+    name: "聚合图",
+    component: () => import("@/views/cluster/cluster.vue"),
+  },
+  {
+    path: "/selectBox",
+    name: "框选",
+    component: () => import("@/views/selectBox/selectBox.vue"),
+  },
 ];
 
 export default routes
