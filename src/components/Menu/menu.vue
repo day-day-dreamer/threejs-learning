@@ -1,18 +1,42 @@
+<!--
+ * @Descripttion: 
+ * @Author: 笙痞
+ * @Date: 2023-01-04 11:06:25
+ * @LastEditors: 笙痞77
+ * @LastEditTime: 2023-05-05 14:43:13
+-->
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import routes from "@/router/router.js";
-import { Location } from "@element-plus/icons-vue";
+import { useRouter, useRoute } from "vue-router";
 
+const router = useRouter();
+const route = useRoute();
 const isCollapse = ref(false);
+const activePath = ref();
 const onExpand = () => {
   isCollapse.value = !isCollapse.value;
-  if (isCollapse.value) {
-    setTimeout(() => {
-      window.globalMap.updateSize();
-    }, 500);
-  }
 };
-const hash = location.hash?.slice(1);
+
+const linkTo = (name, path) => {
+  activePath.value = path;
+  router.push({
+    name,
+  });
+};
+const defaultOpenArr = routes.map((item) => item.path);
+
+watch(
+  () => route.meta.activePath,
+  (newPath, oldPath) => {
+    if (newPath !== oldPath) {
+      activePath.value = newPath;
+    }
+  },
+  {
+    immediate: true,
+  }
+);
 </script>
 <template>
   <el-menu
@@ -21,25 +45,27 @@ const hash = location.hash?.slice(1);
     class="el-menu-vertical-demo"
     text-color="#fff"
     :collapse="isCollapse"
-    :default-openeds="[1]"
-    :default-active="hash"
-    @open="handleOpen"
-    @close="handleClose"
-    router="true"
+    :default-openeds="defaultOpenArr"
+    :default-active="activePath"
   >
-    <el-sub-menu index="1">
+    <el-sub-menu
+      popper-class="pop-item"
+      v-for="item in routes"
+      :key="item.path"
+      :index="item.path"
+    >
       <template #title>
-        <el-icon><location /></el-icon>
-        <span>基础功能</span>
+        <span>{{ item.meta.title }}</span>
       </template>
-      <el-menu-item-group>
+      <template v-if="item.children">
         <el-menu-item
-          v-for="item in routes"
-          :key="item.path"
-          :index="item.path"
-          >{{ item.name }}</el-menu-item
+          v-for="el in item.children"
+          :key="el.meta?.activePath"
+          @click="linkTo(el.name)"
+          :index="el.meta?.activePath"
+          >{{ el.meta?.title }}</el-menu-item
         >
-      </el-menu-item-group>
+      </template>
     </el-sub-menu>
     <el-icon class="expand-icon" :size="20" color="#fff" @click="onExpand">
       <Expand v-if="isCollapse" />
@@ -52,11 +78,13 @@ const hash = location.hash?.slice(1);
   min-height: 100vh;
   position: relative;
   padding-bottom: 30px;
-  width: 200px;
+  width: 150px;
 }
+
 .el-menu--collapse {
   min-height: 100vh;
 }
+
 .expand-icon {
   display: block;
   width: 100%;

@@ -1,65 +1,95 @@
-import Home from '@/views/home/home.vue'
+/*
+ * @Description: 
+ * @Author: 笙痞77
+ * @Date: 2023-05-05 10:10:02
+ * @LastEditors: 笙痞77
+ * @LastEditTime: 2023-05-06 16:05:42
+ */
+import EmptyRouterView from "@/components/RouterView/EmptyRouterView.vue"
 const routes = [
   {
     path: "/",
-    name: "首页",
-    component: Home,
+    name: "index",
+    component: () => import('@/views/home/home.vue'),
+    meta: {
+      title: "首页",
+      activePath: "/"
+    }
   },
   {
-    path: "/goOrigin",
-    name: "回到原点",
-    component: () => import("@/views/goOrigin/goOrigin.vue"),
+    path: "/base",
+    component: EmptyRouterView,
+    meta: {
+      title: "基础"
+    },
+    children: [
+      {
+        path: 'init',
+        name: "base_init",
+        component: () => import("@/views/base/init.vue"),
+        meta: {
+          title: "初始化",
+          activePath: "/base/init"
+
+        }
+      },
+      {
+        path: 'drawLine',
+        name: "base_drawLine",
+        component: () => import("@/views/base/drawLine.vue"),
+        meta: {
+          title: "画线",
+          activePath: "/base/drawLine"
+
+        }
+      },
+      {
+        path: 'load3Dmodel',
+        name: "base_load3Dmodel",
+        component: () => import("@/views/base/load3Dmodel.vue"),
+        meta: {
+          title: "3D模型",
+          activePath: "/base/load3Dmodel"
+
+        }
+      },
+      {
+        path: 'skybox',
+        name: "base_skybox",
+        component: () => import("@/views/base/skybox.vue"),
+        meta: {
+          title: "天空盒",
+          activePath: "/base/skybox"
+
+        }
+      }
+
+    ]
+
   },
   {
-    path: "/createMark",
-    name: "打点",
-    component: () => import("@/views/createMark/createMark.vue"),
+    path: "/particle",
+    component: EmptyRouterView,
+    meta: {
+      title: "粒子系统"
+    },
+    children: [
+      {
+        path: 'fire',
+        name: "particle_fire",
+        component: () => import("@/views/particle/fire.vue"),
+        meta: {
+          title: "火焰",
+          activePath: "/particle/fire"
+
+        }
+      },
+
+
+    ]
+
   },
-  {
-    path: "/heatMap",
-    name: "人口热力图",
-    component: () => import("@/views/heatMap/heatMap.vue"),
-  },
-  {
-    path: "/measure",
-    name: "测量工具",
-    component: () => import("@/views/measure/measure.vue"),
-  },
-  {
-    path: "/draw",
-    name: "绘制",
-    component: () => import("@/views/draw/draw.vue"),
-  },
-  {
-    path: "/radiate",
-    name: "辐射圈",
-    component: () => import("@/views/radiate/radiate.vue"),
-  },
-  {
-    path: "/lineArrow",
-    name: "箭头线",
-    component: () => import("@/views/lineArrow/lineArrow.vue"),
-  },
-  {
-    path: "/regularShapes",
-    name: "规则几何图形",
-    component: () => import("@/views/regularShapes/regularShapes.vue"),
-  },
-  {
-    path: "/search",
-    name: "查询",
-    component: () => import("@/views/search/search.vue"),
-  },
-  {
-    path: "/cluster",
-    name: "聚合图",
-    component: () => import("@/views/cluster/cluster.vue"),
-  },
-  {
-    path: "/selectBox",
-    name: "框选",
-    component: () => import("@/views/selectBox/selectBox.vue"),
-  },
+
 ];
 
 export default routes
