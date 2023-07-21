@@ -3,7 +3,7 @@
  * @Author: 笙痞77
  * @Date: 2023-05-05 10:20:56
  * @LastEditors: 笙痞77
- * @LastEditTime: 2023-05-06 11:06:44
+ * @LastEditTime: 2023-07-20 14:29:49
 -->
 <template>
   <div id="three-dom" ref="screenDom"></div>
@@ -11,9 +11,12 @@
 <script setup>
 import * as THREE from 'three'
 import { onMounted, ref } from 'vue';
+import gsap from "gsap"
+import * as dat from "dat.gui"
 
 const screenDom = ref(null)
 const scene = new THREE.Scene()
+const gui = new dat.GUI()
 
 onMounted(() => {
   init()
@@ -47,9 +50,13 @@ const init = () => {
 
   // 贴纹理
   const textureLoader = new THREE.TextureLoader()
+  const loaderTexture = textureLoader.load("/images/wall.jpg")
+  // 以图片中心旋转45度
+  loaderTexture.center.set(0.5, 0.5)
+  loaderTexture.rotation = Math.PI / 4
   const material = new THREE.MeshPhongMaterial({
     // color: 0xFF8844,
-    map: textureLoader.load("/images/wall.jpg")
+    map: loaderTexture
   })
   const cube = new THREE.Mesh(geometry, material)
   scene.add(cube)
@@ -62,21 +69,42 @@ const init = () => {
   light.position.set(-1, 2, 4)
   scene.add(light)
 
+  // 添加控制器
+  gui.add(cube.position, "x").min(0).max(5)
 
+  // 设置动画
+  // gsap.to(cube.position, {
+  //   x: 5,
+  //   duration: 5,
+  //   ease: "power1.inOut",
+  //   repeat: -1, // 重复次数，-1无限次
+  //   yoyo: true,
+  // })
   const animate = () => {
     requestAnimationFrame(animate)
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
+    // cube.rotation.x += 0.01;
+    // cube.rotation.y += 0.01;
+    // if (resizeRendererToDisplaySize(renderer)) {
+    //   const canvas = renderer.domElement
+    //   camera.aspect = canvas.clientWidth / canvas.clientHeight;
+    //   console.log('--', camera.aspect);
+
+    //   camera.updateProjectionMatrix()
+    // }
+    renderer.render(scene, camera)
+  }
+  animate()
+
+  window.addEventListener("resize", () => {
     if (resizeRendererToDisplaySize(renderer)) {
       const canvas = renderer.domElement
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
       console.log('--', camera.aspect);
 
       camera.updateProjectionMatrix()
+      renderer.setPixelRatio(window.devicePixelRatio)
     }
-    renderer.render(scene, camera)
-  }
-  animate()
+  })
 }
 
 </script>

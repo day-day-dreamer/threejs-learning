@@ -3,7 +3,7 @@
  * @Author: 笙痞77
  * @Date: 2023-05-05 10:20:56
  * @LastEditors: 笙痞77
- * @LastEditTime: 2023-05-06 16:13:28
+ * @LastEditTime: 2023-07-20 10:16:43
 -->
 <template>
   <div id="three-dom" ref="screenDom"></div>
@@ -33,6 +33,8 @@ const init = () => {
   screenDom.value.appendChild(renderer.domElement)
   // 鼠标控制
   const controls = new OrbitControls(camera, renderer.domElement)
+  // 设置阻尼
+  controls.enableDamping = true
   controls.target.set(0, 0, 0)
   controls.update()
 
@@ -63,6 +65,7 @@ const init = () => {
     requestAnimationFrame(animate)
     cube.rotation.x += 0.01;
     cube.rotation.y += 0.01;
+    controls.update()
     renderer.render(scene, camera)
   }
   animate()

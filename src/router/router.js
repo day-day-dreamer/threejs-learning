@@ -3,7 +3,7 @@
  * @Author: 笙痞77
  * @Date: 2023-05-05 10:10:02
  * @LastEditors: 笙痞77
- * @LastEditTime: 2023-05-06 16:05:42
+ * @LastEditTime: 2023-07-21 15:09:04
  */
 import EmptyRouterView from "@/components/RouterView/EmptyRouterView.vue"
 const routes = [
@@ -85,6 +85,37 @@ const routes = [
         }
       },
 
+
+    ]
+
+  },
+  {
+    path: "/example",
+    component: EmptyRouterView,
+    meta: {
+      title: "场景示例"
+    },
+    children: [
+      {
+        path: 'vr',
+        name: "example_vr",
+        component: () => import("@/views/example/vr.vue"),
+        meta: {
+          title: "vr看房",
+          activePath: "/example/vr"
+
+        }
+      },
+      {
+        path: 'island',
+        name: "example_island",
+        component: () => import("@/views/example/island.vue"),
+        meta: {
+          title: "岛屿",
+          activePath: "/example/island"
+
+        }
+      },
 
     ]
 
