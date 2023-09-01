@@ -1,0 +1,11 @@
+Model Information:
+* title:	Tree Animate
+* source:	https://sketchfab.com/3d-models/tree-animate-f0f9eb5e6c104bbb8e1f41c97019e6f2
+* author:	RandyGF (https://sketchfab.com/RandyGF)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Tree Animate" (https://sketchfab.com/3d-models/tree-animate-f0f9eb5e6c104bbb8e1f41c97019e6f2) by RandyGF (https://sketchfab.com/RandyGF) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

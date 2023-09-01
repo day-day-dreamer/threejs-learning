@@ -1,6 +1,13 @@
 /*
  * @Description: 
  * @Author: 笙痞77
+ * @Date: 2023-07-19 16:39:41
+ * @LastEditors: 笙痞77
+ * @LastEditTime: 2023-08-28 16:09:17
+ */
+/*
+ * @Description: 
+ * @Author: 笙痞77
  * @Date: 2023-05-05 10:10:02
  * @LastEditors: 笙痞77
  * @LastEditTime: 2023-07-21 15:09:04
@@ -116,11 +123,18 @@ const routes = [
 
         }
       },
-
+      {
+        path: 'park',
+        name: "example_park",
+        component: () => import("@/views/example//park/park.vue"),
+        meta: {
+          title: "园区",
+          activePath: "/example/park"
+        }
+      },
     ]
 
   },
-
 ];
 
 export default routes
