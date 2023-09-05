@@ -3,7 +3,7 @@
  * @Author: 笙痞77
  * @Date: 2023-08-28 16:06:00
  * @LastEditors: 笙痞77
- * @LastEditTime: 2023-09-01 09:16:51
+ * @LastEditTime: 2023-09-04 18:44:01
 -->
 <template>
   <div id="jindu-text-con" v-if="progressBarShow">
@@ -14,6 +14,10 @@
   </div>
   <video id="videoContainer"></video>
   <div id="container" ref="container"></div>
+  <div class="operate-box">
+    <!-- <el-button type="success" @click="onBuildSplit">取消楼体分层</el-button> -->
+    <el-button type="warning" @click="onReset">场景重置</el-button>
+  </div>
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
@@ -29,6 +33,7 @@ let viewer = null
 let cityv1 = null
 let car = null
 let carLabel = null
+let officeLabel = null
 let officeBuild = null
 let oldOfficeBuild = {}
 let curve = null
@@ -37,17 +42,19 @@ let timeen = {}
 let modelLoader = null
 let labelIns = null // 标签实例
 let laboratoryBuild = {}
+let laboratoryBuildClone = {}
 let videoTextTure = null // 视频纹理
-let curFloorName = "" // 当前选中的楼层name
+let curFloorName = "" // 当前鼠标点击选中的楼层name
+let modelMoveName = "" // 当前鼠标移动过程中选中的模型name
 let selectedFloorName = "" // 已经选中过的楼层name
-let isFloorSelectName = false
+let isSplit = false // 楼体是否分层
+let lastIndex // 记录上一次点击的楼层index
 const sceneList = ['实验楼']
+
 
 let progress = 0; // 物体运动时在运动路径的初始位置，范围0~1
 const velocity = 0.001; // 影响运动速率的一个值，范围0~1，需要和渲染频率结合计算才能得到真正的速率
 const officeFloorList = Array(6).fill(0).map((item, index) => `zuo${index}`) // 办公室楼层
-
-console.log("----officeFloorList----", officeFloorList)
 
 const isopen = ref(false)
 const progressText = ref("0%")
@@ -77,6 +84,9 @@ const init = () => {
   modelLoader = new ModelLoader(viewer)
 
   labelIns = new Labels(viewer)
+
+  // 添加状态检测
+  viewer.addStats()
   // 初始化视频纹理
   initVideoTexture()
   // 初始化车辆
@@ -217,7 +227,7 @@ const loadOfficeBuild = () => {
     })
     oldOfficeBuild = officeBuild.object.clone()
     const buildBox = officeBuild.getBox()
-    labelIns.addCss2dLabel({
+    officeLabel = labelIns.addCss2dLabel({
       x: buildBox.max.x / 2,
       y: buildBox.max.y,
       z: buildBox.max.z
@@ -238,11 +248,15 @@ const loadOfficeBuild = () => {
 const officeMouseMove = () => {
   // TODO: 做一个节流
   viewer.startSelectEvent("mousemove", false, (model) => {
-    if (model.parent?.parent?.name === '办公大厅') {
+    if (curFloorName) {
+      viewer.stopSelectEvent()
+    }
+    if (model.parent?.parent?.name === '办公大厅' && !isSplit) {
       officeFloorList.forEach((item) => {
         if (item === model.parent.name) {
-          curFloorName = item
-          if (selectedFloorName === curFloorName) {
+          modelMoveName = item
+          if (curFloorName === modelMoveName) {
+            // 如果当前选中的楼层和鼠标移动选中的楼层相同，则不给当前选中的楼层改变材质，仍保持原来的材质
             return
           }
           officeBuild.object.getObjectByName(item).traverse((child) => {
@@ -258,7 +272,7 @@ const officeMouseMove = () => {
             }
           })
         } else {
-          if (!isFloorSelectName) {
+          if (!isSplit) {
             const oldModel = oldOfficeBuild.getObjectByName(item)
             officeBuild.object.getObjectByName(item)?.traverse((child) => {
               if (child.isMesh) {
@@ -267,16 +281,17 @@ const officeMouseMove = () => {
               }
             })
           } else {
-            officeBuild.object.getObjectByName(item).traverse((child) => {
-              if (child.isMesh && child.parent.name !== selectedFloorName) {
-                child.material = new THREE.MeshPhongMaterial({
-                  color: new THREE.Color('#123ca8'),
-                  transparent: true,
-                  opacity: 0.5,
-                  emissiveMap: child.material.map,
-                })
-              }
-            })
+            // 未选中的楼层设置为蓝色
+            // officeBuild.object.getObjectByName(item).traverse((child) => {
+            //   if (child.isMesh && child.parent.name !== curFloorName) {
+            //     child.material = new THREE.MeshPhongMaterial({
+            //       color: new THREE.Color('#123ca8'),
+            //       transparent: true,
+            //       opacity: 0.5,
+            //       emissiveMap: child.material.map,
+            //     })
+            //   }
+            // })
           }
         }
       })
@@ -290,24 +305,27 @@ const officeFloorClick = () => {
   viewer.renderer.domElement.addEventListener('click', (e) => {
     const rayCaster = new THREE.Raycaster()
     const mouse = new THREE.Vector2()
+    // 将鼠标位置归一化为设备坐标。x 和 y 方向的取值范围是 (-1 to +1)
     mouse.x = (e.offsetX / viewer.renderer.domElement.clientWidth) * 2 - 1
     mouse.y = -(e.offsetY / viewer.renderer.domElement.clientHeight) * 2 + 1
+    // 通过摄像机和鼠标位置更新射线
     rayCaster.setFromCamera(mouse, viewer.camera)
     // TODO: 第一个参数是否需要指定模型
-    const intersects = rayCaster.intersectObject(viewer.scene, true)
-    if (intersects.length > 0 && curFloorName) {
+    const intersects = rayCaster.intersectObject(viewer.scene, true) // 计算物体和射线的焦点
+    if (intersects.length > 0 && modelMoveName) {
       const model = intersects[0].object.parent
       if (model.name.includes("zuo")) {
-        if (!isFloorSelectName) {
+        if (!isSplit) {
           // 隐藏车和标签
           // TODO: 找到更方便的模型指定方式，而不是每次都遍历查找
           carLabel.visible = false
-          viewer.scene.children[viewer.scene.children.findIndex(item => item.name === "快递车")].visible = false
-          viewer.scene.children[viewer.scene.children.findIndex(o => o.name == 'cityv1')].visible = false
-          viewer.scene.children[viewer.scene.children.findIndex(o => o.name == '树')].visible = false
+          officeLabel.visible = false
+          viewer.scene.children.find(item => item.name === "快递车").visible = false
+          viewer.scene.children.find(o => o.name == 'cityv1').visible = false
+          viewer.scene.children.find(o => o.name == '树').visible = false
           // 实验楼材质变化
           sceneList.forEach(item => {
-            viewer.scene.children.find(o => o.name === item).traverse((child) => {
+            viewer.scene.children.find(o => o.name == item).traverse((child) => {
               child.material = new THREE.MeshPhongMaterial({
                 color: new THREE.Color('rgba(7,32,96,0.76)'),
                 transparent: true,
@@ -318,19 +336,19 @@ const officeFloorClick = () => {
             })
           })
           gsap.to(viewer.scene.children.find(o => o.name === "人").rotation, {
-            y: Math.PI,
+            y: Math.PI, // 旋转角度
             duration: 2,
             ease: "power1.inOut",
             onComplete: () => {
-              isFloorSelectName = true
+              isSplit = true
             },
           })
         }
         selectOffice(model)
       } else {
-        if (!isFloorSelectName) {
-          const oldModel = oldOfficeBuild.getObjectByName(curFloorName)
-          officeBuild.object.getObjectByName(curFloorName).traverse(function (child) {
+        if (!isSplit) {
+          const oldModel = oldOfficeBuild.getObjectByName(modelMoveName)
+          officeBuild.object.getObjectByName(modelMoveName).traverse(function (child) {
             if (child.isMesh) {
               child.material = oldModel.getObjectByName(child.name).material
             }
@@ -344,45 +362,94 @@ const officeFloorClick = () => {
 const selectOffice = (model) => {
   curFloorName = model.name
   const oldModel = oldOfficeBuild.getObjectByName(curFloorName)
+  // 找到当前点击的楼层
   const modelSelectIndex = officeFloorList.findIndex(item => item === curFloorName)
-  officeBuild.object.children.forEach((child, index) => {
-    child.children.forEach(Mesh => {
+  if (modelSelectIndex === lastIndex) return
+  if (!isSplit) {
+    // 楼体还未分层的时候要做的事
+    officeBuild.object.children.forEach((child, index) => {
       if (child.name === curFloorName) {
+        // 当前楼层附着原本材质
         child.children.forEach(ol => {
           ol.material = oldModel.getObjectByName(ol.name).material
         })
-      } else {
-        Mesh.material = new THREE.MeshPhongMaterial({
-          color: new THREE.Color('#123ca8'),
-          transparent: true,
-          opacity: 0.5,
-          emissiveMap: Mesh.material.map,
+      }
+      // if (child.name === curFloorName) {
+      //   // 当前楼层附着原本材质
+      //   child.children.forEach(ol => {
+      //     ol.material = oldModel.getObjectByName(ol.name).material
+      //   })
+      // } else {
+      //   // 其余楼层附着蓝色透明材质
+      //   child.children.forEach(Mesh => {
+      //     Mesh.material = new THREE.MeshPhongMaterial({
+      //       color: new THREE.Color('#123ca8'),
+      //       transparent: true,
+      //       opacity: 0.5,
+      //       emissiveMap: Mesh.material.map,
+      //     })
+      //   })
+      // }
+      if (index > 0) {
+        isSplit = true
+        gsap.to(child.position, {
+          y: child.position.y + index * 10,
+          duration: 2,
+          ease: "power1.inOut",
         })
       }
+
+      // if (!model.userData.position && index > modelSelectIndex) {
+      //   gsap.to(child.position, {
+      //     y: !child.userData.position ? child.position.y + 25 : child.position.y,
+      //     duration: 2,
+      //     ease: "power1.inOut",
+      //     onComplete: () => {
+      //       child.userData.position = true
+      //     },
+      //   })
+      // }
+      // if (model.userData.position && index <= modelSelectIndex) {
+      //   if (child.userData.position) {
+      //     gsap.to(child.position, {
+      //       y: oldOfficeBuild.getObjectByName(child.name).position.y,
+      //       // z: child.position.z - 40,
+      //       duration: 2,
+      //       ease: "power1.inOut",
+      //       onComplete: () => {
+      //         child.userData.position = false
+      //       },
+      //     });
+      //   }
+      // }
     })
-    if (!model.userData.position && index > modelSelectIndex) {
-      gsap.to(child.position, {
-        y: !child.userData.position ? child.position.y + 25 : child.position.y,
-        duration: 2,
-        ease: "power1.inOut",
-        onComplete: () => {
-          child.userData.position = true
-        },
-      })
-    }
-    if (model.userData.position && index <= modelSelectIndex) {
-      if (child.userData.position) {
+  } else {
+    // TODO:点击快了之后会出现错乱；
+    // 楼体分层之后点击抽出楼层
+    officeBuild.object.children.forEach((child, index) => {
+      if (index === lastIndex) {
+        // 将上一次抽出的楼层归位
         gsap.to(child.position, {
-          y: oldOfficeBuild.getObjectByName(child.name).position.y,
+          z: child.position.z + 40,
+          duration: 2,
+          ease: "power1.inOut",
+        })
+      }
+      if (child.name === curFloorName) {
+        gsap.to(child.position, {
+          z: child.position.z - 40,
           duration: 2,
           ease: "power1.inOut",
           onComplete: () => {
-            child.userData.position = false
-          },
-        });
+            lastIndex = index
+
+          }
+        })
       }
-    }
-  })
+
+    })
+  }
+
   gsap.to(viewer.controls.target, {
     x: 12,
     y: 0,
@@ -392,15 +459,15 @@ const selectOffice = (model) => {
     onComplete: () => {
     },
   });
-  gsap.to(viewer.camera.position, {
-    x: 12,
-    y: 18,
-    z: 38,
-    duration: 2,
-    ease: "power1.inOut",
-    onComplete: () => {
-    },
-  });
+  // gsap.to(viewer.camera.position, {
+  //   x: 12,
+  //   y: 18,
+  //   z: 38,
+  //   duration: 2,
+  //   ease: "power1.inOut",
+  //   onComplete: () => {
+  //   },
+  // });
 }
 /**
  * 加载实验楼
@@ -456,7 +523,7 @@ const loadCar = () => {
  * 加载树
  */
 const loadTree = () => {
-  modelLoader.loadModelToScene('/glTF/tree_animate/scene.gltf', model => {
+  modelLoader.loadModelToScene('glTF/tree_animate/scene.gltf', model => {
     model.openCastShadow()
     model.object.position.set(8, 0, 26)
     model.object.scale.set(0.08, 0.08, 0.08)
@@ -548,6 +615,33 @@ const makeCurve = () => {
   curveObject.position.y = -1;
   viewer.scene.add(curveObject)
 }
+const onReset = () => {
+  gsap.to(viewer.camera.position, {
+    x: 17,
+    y: 10,
+    z: 52,
+    duration: 2,
+    ease: "Bounce.inOut",
+  });
+  gsap.to(viewer.scene.children.find(o => o.name == '人').rotation, {
+    y: 0,
+    duration: 2,
+    ease: "power1.inOut",
+  });
+  carLabel.visible = true
+  officeLabel.visible = true
+  viewer.scene.children.find(o => o.name === '快递车').visible = true
+  viewer.scene.children.find(o => o.name === '树').visible = true
+  viewer.scene.children.find(o => o.name === 'cityv1').visible = true
+  viewer.scene.children[viewer.scene.children.findIndex(o => o.name == '实验楼')] = laboratoryBuild.clone()
+  viewer.scene.children[viewer.scene.children.findIndex(o => o.name == '办公大厅')] = officeBuild.object = oldOfficeBuild.clone()
+  curFloorName = ""
+  modelMoveName = null
+  isSplit = false
+  lastIndex = null
+  selectedFloorName = ""
+  officeMouseMove()
+}
 </script>
 <style lang='less' scoped>
 #container {
@@ -599,5 +693,15 @@ const makeCurve = () => {
   color: aliceblue;
   border-radius: 5px;
   cursor: pointer;
+}
+
+.operate-box {
+  position: absolute;
+  z-index: 100;
+  bottom: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
 }
 </style>

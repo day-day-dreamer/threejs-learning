@@ -3,12 +3,13 @@
  * @Author: 笙痞77
  * @Date: 2023-08-28 16:43:52
  * @LastEditors: 笙痞77
- * @LastEditTime: 2023-08-31 13:55:51
+ * @LastEditTime: 2023-09-01 13:57:20
  */
-import { Cache, WebGLRenderer, PerspectiveCamera, Scene, Color } from "three"
+import { Cache, WebGLRenderer, PerspectiveCamera, Scene, Color, AxesHelper } from "three"
 import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer" // 二维标签渲染器
 import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer" // 三维标签渲染器
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
+import Stats from "three/examples/jsm/libs/stats.module"
 import SkyBoxs from "./SkyBoxs"
 import Lights from "./Lights"
 import ThreeMouseEvent from "./ThreeMouseEvent"
@@ -49,6 +50,42 @@ export default class Viewer {
     }
 
     animate()
+  }
+  /**
+     * 添加坐标轴
+     */
+  addAxis() {
+    // 显示坐标轴(x轴: 红色; y轴: 绿色; z轴: 蓝色)
+    // x轴水平方向(右正); y轴垂直方向(上正); z轴垂直xy平面即屏幕(外正)
+    this.scene.add(new AxesHelper(100))
+  }
+  /**
+   * 添加状态检测
+   */
+  addStats() {
+    if (!this.statsControls) {
+      this.statsControls = new Stats()
+    }
+    this.statsControls.dom.style.position = 'absolute'
+    this.viewerDom.appendChild(this.statsControls.dom)
+    // 添加到动画
+    this.statsUpdateObj = {
+      fun: this.#statsUpdate,
+      content: this.statsControls
+    }
+    this.addAnimate(this.statsUpdateObj)
+  }
+  /**
+   * 移除状态检测
+   */
+  removeStats() {
+    if (this.statsControls && this.statsUpdateObj) {
+      this.viewerDom.removeChild(this.statsControls.dom)
+      this.removeAnimate(this.statsUpdateObj)
+    }
+  }
+  #statsUpdate(statsControls) {
+    statsControls.update()
   }
   /**
    * 更新DOM
