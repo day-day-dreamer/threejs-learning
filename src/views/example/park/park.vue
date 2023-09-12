@@ -3,7 +3,7 @@
  * @Author: 笙痞77
  * @Date: 2023-08-28 16:06:00
  * @LastEditors: 笙痞77
- * @LastEditTime: 2023-09-04 18:44:01
+ * @LastEditTime: 2023-09-11 14:08:30
 -->
 <template>
   <div id="jindu-text-con" v-if="progressBarShow">
@@ -15,8 +15,8 @@
   <video id="videoContainer"></video>
   <div id="container" ref="container"></div>
   <div class="operate-box">
-    <!-- <el-button type="success" @click="onBuildSplit">取消楼体分层</el-button> -->
     <el-button type="warning" @click="onReset">场景重置</el-button>
+    <el-button type="warning" @click="onChangeTime">{{ timeText }}</el-button>
   </div>
 </template>
 <script setup>
@@ -49,7 +49,12 @@ let modelMoveName = "" // 当前鼠标移动过程中选中的模型name
 let selectedFloorName = "" // 已经选中过的楼层name
 let isSplit = false // 楼体是否分层
 let lastIndex // 记录上一次点击的楼层index
+let skyBoxs = null
 const sceneList = ['实验楼']
+const TimeNums = {
+  "day": "白天模式",
+  "night": "夜间模式"
+}
 
 
 let progress = 0; // 物体运动时在运动路径的初始位置，范围0~1
@@ -60,12 +65,13 @@ const isopen = ref(false)
 const progressText = ref("0%")
 const progressBarShow = ref(true)
 const isDriver = ref(false)
+const timeText = ref(TimeNums.night)
 onMounted(() => {
   init()
 })
 const init = () => {
   viewer = new Viewer('container')
-  const skyBoxs = new SkyBoxs(viewer) // 创建天空盒
+  skyBoxs = new SkyBoxs(viewer) // 创建天空盒
   viewer.camera.position.set(17, 10, 52)
   viewer.controls.maxPolarAngle = Math.PI / 2.1 // 限制controls的上下角度范围
 
@@ -84,6 +90,8 @@ const init = () => {
   modelLoader = new ModelLoader(viewer)
 
   labelIns = new Labels(viewer)
+
+  viewer.addAxis()
 
   // 添加状态检测
   viewer.addStats()
@@ -107,6 +115,15 @@ const init = () => {
   officeMouseMove()
   // 办公楼点击
   officeFloorClick()
+}
+const onChangeTime = () => {
+  if (timeText.value === TimeNums.night) {
+    skyBoxs.setSkybox("night")
+    timeText.value = "白天模式"
+  } else {
+    skyBoxs.setSkybox("day")
+    timeText.value = "夜间模式"
+  }
 }
 /**
  * 初始化视频纹理
@@ -523,9 +540,9 @@ const loadCar = () => {
  * 加载树
  */
 const loadTree = () => {
-  modelLoader.loadModelToScene('glTF/tree_animate/scene.gltf', model => {
+  modelLoader.loadModelToScene('glTF/tree_animate/new-scene.gltf', model => {
     model.openCastShadow()
-    model.object.position.set(8, 0, 26)
+    model.object.position.set(8, 0, 16)
     model.object.scale.set(0.08, 0.08, 0.08)
     model.object.name = '树'
     model.startAnimal()
@@ -702,6 +719,6 @@ const onReset = () => {
   width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: space-around;
+  justify-content: center;
 }
 </style>

@@ -134,8 +134,6 @@ export default class DsModel {
         mesh.frustumCulled = false // 不剔除
         mesh.material.side = THREE.DoubleSide // 双面显示
         mesh.castShadow = true // 阴影
-        // mesh.material.emissive = mesh.material.color;
-        // mesh.material.emissiveMap = mesh.material.map;
       }
     })
   }
