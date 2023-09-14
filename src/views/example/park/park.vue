@@ -3,7 +3,7 @@
  * @Author: 笙痞77
  * @Date: 2023-08-28 16:06:00
  * @LastEditors: 笙痞77
- * @LastEditTime: 2023-09-11 14:08:30
+ * @LastEditTime: 2023-09-13 14:56:37
 -->
 <template>
   <div id="jindu-text-con" v-if="progressBarShow">
@@ -81,7 +81,7 @@ const init = () => {
     color: 0xffffff,
     intensity: 1, // 环境光强度
   })
-  // 添加平行光
+  // // 添加平行光
   lights.addDirectionalLight([100, 100, -10], {
     color: 'rgb(253,253,253)',
     intensity: 3,
@@ -109,6 +109,8 @@ const init = () => {
   loadBillBoard()
   // 加载人
   loadPeople()
+  // 加载路灯
+  loadLamp()
   // 加载树
   loadTree()
   // 办公楼鼠标移动效果
@@ -146,6 +148,22 @@ const loadPeople = () => {
     model.object.name = '人'
     model.startAnimal(1)
     model.cloneModel([25, 0, 29]).startAnimal()
+  })
+}
+/**
+ * 加载路灯
+ */
+const loadLamp = () => {
+  modelLoader.loadModelToScene('/glb/lightpostDouble.glb', (model) => {
+    model.openCastShadow()
+    model.object.position.set(23, 0, 29)
+    model.object.scale.set(1, 3, 1)
+    model.object.name = '路灯'
+    model.cloneModel([20, 0, 29])
+    model.cloneModel([17, 0, 29])
+    model.cloneModel([14, 0, 29])
+    model.cloneModel([9, 0, 29])
+    model.cloneModel([6, 0, 29])
   })
 }
 
