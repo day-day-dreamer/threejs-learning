@@ -3,7 +3,7 @@
  * @Author: 笙痞77
  * @Date: 2023-08-28 16:06:00
  * @LastEditors: 笙痞77
- * @LastEditTime: 2023-09-13 14:56:37
+ * @LastEditTime: 2023-09-14 10:57:30
 -->
 <template>
   <div id="jindu-text-con" v-if="progressBarShow">
@@ -21,13 +21,13 @@
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
-import * as THREE from "three";
-import Viewer from '@/common/threeModules/Viewer';
-import SkyBoxs from '@/common/threeModules/SkyBoxs';
-import Lights from '@/common/threeModules/Lights';
-import ModelLoader from '@/common/threeModules/ModelLoader';
-import Labels from '@/common/threeModules/Labels';
-import gsap from "gsap";
+import * as THREE from 'three'
+import Viewer from '@/common/threeModules/Viewer'
+import SkyBoxs from '@/common/threeModules/SkyBoxs'
+import Lights from '@/common/threeModules/Lights'
+import ModelLoader from '@/common/threeModules/ModelLoader'
+import Labels from '@/common/threeModules/Labels'
+import gsap from 'gsap'
 
 let viewer = null
 let cityv1 = null
@@ -44,25 +44,26 @@ let labelIns = null // 标签实例
 let laboratoryBuild = {}
 let laboratoryBuildClone = {}
 let videoTextTure = null // 视频纹理
-let curFloorName = "" // 当前鼠标点击选中的楼层name
-let modelMoveName = "" // 当前鼠标移动过程中选中的模型name
-let selectedFloorName = "" // 已经选中过的楼层name
+let curFloorName = '' // 当前鼠标点击选中的楼层name
+let modelMoveName = '' // 当前鼠标移动过程中选中的模型name
+let selectedFloorName = '' // 已经选中过的楼层name
 let isSplit = false // 楼体是否分层
 let lastIndex // 记录上一次点击的楼层index
 let skyBoxs = null
 const sceneList = ['实验楼']
 const TimeNums = {
-  "day": "白天模式",
-  "night": "夜间模式"
+  day: '白天模式',
+  night: '夜间模式'
 }
 
-
-let progress = 0; // 物体运动时在运动路径的初始位置，范围0~1
-const velocity = 0.001; // 影响运动速率的一个值，范围0~1，需要和渲染频率结合计算才能得到真正的速率
-const officeFloorList = Array(6).fill(0).map((item, index) => `zuo${index}`) // 办公室楼层
+let progress = 0 // 物体运动时在运动路径的初始位置，范围0~1
+const velocity = 0.001 // 影响运动速率的一个值，范围0~1，需要和渲染频率结合计算才能得到真正的速率
+const officeFloorList = Array(6)
+  .fill(0)
+  .map((item, index) => `zuo${index}`) // 办公室楼层
 
 const isopen = ref(false)
-const progressText = ref("0%")
+const progressText = ref('0%')
 const progressBarShow = ref(true)
 const isDriver = ref(false)
 const timeText = ref(TimeNums.night)
@@ -79,14 +80,37 @@ const init = () => {
   const ambientLight = lights.addAmbientLight() // 添加环境光
   ambientLight.setOption({
     color: 0xffffff,
-    intensity: 1, // 环境光强度
+    intensity: 1 // 环境光强度
   })
-  // // 添加平行光
+  ambientLight.light.name = 'AmbientLight'
+  // 添加平行光
   lights.addDirectionalLight([100, 100, -10], {
     color: 'rgb(253,253,253)',
     intensity: 3,
-    castShadow: true, // 是否投射阴影
+    castShadow: true // 是否投射阴影
   })
+
+  const addSpotLight = (x, y, z, index) => {
+    const spotLight = new THREE.SpotLight()
+    spotLight.name = `SpotLight_${index}`
+    spotLight.position.set(x, y, z)
+    // spotLight.castShadow = true;
+    const temTarget = new THREE.Object3D()
+    y -= 2
+    temTarget.position.set(x, y, z)
+    spotLight.target = temTarget
+    spotLight.penumbra = 0.8
+    spotLight.visible = false
+    viewer.scene.add(spotLight)
+    const spotlightHelper = new THREE.SpotLightHelper(spotLight)
+    spotlightHelper.visible = false
+    viewer.scene.add(spotlightHelper)
+  }
+  addSpotLight(22.5, 32, -30, 0)
+  addSpotLight(10, 32, -30, 1)
+  addSpotLight(-2.5, 32, -30, 2)
+  addSpotLight(-15, 32, -30, 3)
+
   modelLoader = new ModelLoader(viewer)
 
   labelIns = new Labels(viewer)
@@ -119,12 +143,29 @@ const init = () => {
   officeFloorClick()
 }
 const onChangeTime = () => {
+  const ambientLight = viewer.scene.getObjectByName('AmbientLight')
+  const directionalLight = viewer.scene.getObjectByProperty(
+    'type',
+    'DirectionalLight'
+  )
+  const spotLights = viewer.scene.getObjectsByProperty('type', 'SpotLight')
+  console.log(viewer.scene)
   if (timeText.value === TimeNums.night) {
-    skyBoxs.setSkybox("night")
-    timeText.value = "白天模式"
+    skyBoxs.setSkybox('night')
+    timeText.value = '白天模式'
+    ambientLight.intensity = 0.3
+    directionalLight.visible = false
+    spotLights.forEach((spotLight) => {
+      spotLight.visible = true
+    })
   } else {
-    skyBoxs.setSkybox("day")
-    timeText.value = "夜间模式"
+    skyBoxs.setSkybox('day')
+    timeText.value = '夜间模式'
+    ambientLight.intensity = 1.0
+    directionalLight.visible = true
+    spotLights.forEach((spotLight) => {
+      spotLight.visible = false
+    })
   }
 }
 /**
@@ -132,10 +173,10 @@ const onChangeTime = () => {
  */
 const initVideoTexture = () => {
   const video = document.getElementById('videoContainer')
-  video.src = "/video/bi.mp4"
-  video.autoplay = "autoplay"
-  video.loop = "loop"
-  video.muted = "muted"
+  video.src = '/video/bi.mp4'
+  video.autoplay = 'autoplay'
+  video.loop = 'loop'
+  video.muted = 'muted'
   videoTextTure = new THREE.VideoTexture(video)
 }
 /**
@@ -171,40 +212,45 @@ const loadLamp = () => {
  * 初始化停车场栅栏
  */
 const initFence = () => {
-  modelLoader.loadModelToScene('/glb/city-v1.glb', (model) => {
-    model.object.name = "cityv1"
-    model.openCastShadow() // 开启投射阴影
-    model.openReceiveShadow() // 开启接收阴影
-    model.object.children.forEach((item) => {
-      // 门口栅栏动画
-      if (item.name === 'Mesh26') {
-        Mesh26 = item
-        gsap.to(item.scale, {
-          x: item.scale.x / 8,
-          duration: 5,
-          ease: "power1.inOut",
-          onComplete: () => {
-            makeCurve()
-            isopen.value = true
-          }
-        })
+  modelLoader.loadModelToScene(
+    '/glb/city-v1.glb',
+    (model) => {
+      model.object.name = 'cityv1'
+      model.openCastShadow() // 开启投射阴影
+      model.openReceiveShadow() // 开启接收阴影
+      model.object.children.forEach((item) => {
+        // 门口栅栏动画
+        if (item.name === 'Mesh26') {
+          Mesh26 = item
+          gsap.to(item.scale, {
+            x: item.scale.x / 8,
+            duration: 5,
+            ease: 'power1.inOut',
+            onComplete: () => {
+              makeCurve()
+              isopen.value = true
+            }
+          })
+        }
+      })
+      timeen = {
+        fun: moveOnCurve,
+        content: car
       }
-    })
-    timeen = {
-      fun: moveOnCurve,
-      content: car
+      viewer.addAnimate(timeen)
+      cityv1 = model.object.clone()
+    },
+    (pgs) => {
+      pgs = Math.floor(pgs * 100)
+      progressText.value = pgs + '%'
+      if (pgs === 100) {
+        progressBarShow.value = false
+      }
+    },
+    (error) => {
+      console.log('----加载city-v1.glb报错---', error)
     }
-    viewer.addAnimate(timeen)
-    cityv1 = model.object.clone()
-  }, pgs => {
-    pgs = Math.floor(pgs * 100)
-    progressText.value = pgs + "%"
-    if (pgs === 100) {
-      progressBarShow.value = false
-    }
-  }, (error) => {
-    console.log('----加载city-v1.glb报错---', error)
-  })
+  )
 }
 /**
  * 加载广告牌
@@ -217,22 +263,21 @@ const loadBillBoard = () => {
     model.object.rotateY(-Math.PI / 2)
     model.object.scale.set(2.7, 2.7, 2.7)
     model.object.name = '广告牌'
-    const object6 = model.object.getObjectByName("Object_6")
+    const object6 = model.object.getObjectByName('Object_6')
     object6.material = new THREE.MeshBasicMaterial({
       map: videoTextTure,
       side: THREE.DoubleSide,
-      transparent: true,
+      transparent: true
     })
     // const bbox = model.getBox()
-
   })
 }
 /**
  * 加载办公大厅
  */
 const loadOfficeBuild = () => {
-  modelLoader.loadModelToScene('/glb/officeBuild.glb', model => {
-    console.log("----model----", model)
+  modelLoader.loadModelToScene('/glb/officeBuild.glb', (model) => {
+    console.log('----model----', model)
     officeBuild = model
     officeBuild.openCastShadow()
     officeBuild.openReceiveShadow()
@@ -241,39 +286,44 @@ const loadOfficeBuild = () => {
     officeBuild.object.position.set(16, 0, -5)
     officeBuild.object.scale.set(0.2, 0.2, 0.2)
     officeBuild.object.name = '办公大厅'
-    officeBuild.object.children.forEach(item => {
+    officeBuild.object.children.forEach((item) => {
       item.name = item.name.replace('zuo', '')
       if (item.name === 'ding') {
         item.name = 6
       }
       item.name--
     })
-    officeBuild.object.children.sort((a, b) => a.name - b.name).forEach(v => {
-      v.name = 'zuo' + v.name
-    })
-    officeBuild.forEach(child => {
+    officeBuild.object.children
+      .sort((a, b) => a.name - b.name)
+      .forEach((v) => {
+        v.name = 'zuo' + v.name
+      })
+    officeBuild.forEach((child) => {
       if (child.isMesh) {
         child.frustumCulled = false // 关闭投射阴影
-        child.material.emissive = child.material.color; // 设置材质颜色
-        child.material.emissiveMap = child.material.map; // 设置材质贴图
+        child.material.emissive = child.material.color // 设置材质颜色
+        child.material.emissiveMap = child.material.map // 设置材质贴图
         child.material.emissiveIntensity = 1.2 // 设置材质强度
         child.material.envmap = viewer.scene.background // 设置环境贴图
       }
     })
     oldOfficeBuild = officeBuild.object.clone()
     const buildBox = officeBuild.getBox()
-    officeLabel = labelIns.addCss2dLabel({
-      x: buildBox.max.x / 2,
-      y: buildBox.max.y,
-      z: buildBox.max.z
-    }, `<span class="label">${model.object.name}</span>`)
+    officeLabel = labelIns.addCss2dLabel(
+      {
+        x: buildBox.max.x / 2,
+        y: buildBox.max.y,
+        z: buildBox.max.z
+      },
+      `<span class="label">${model.object.name}</span>`
+    )
     // 添加标签动画
     gsap.to(labelIns.label.position, {
       y: buildBox.max.y + 2,
       repeat: -1, // 循环播放
       yoyo: true, // 循环播放
       duration: 2, // 播放时间
-      ease: "Bounce.inOut",
+      ease: 'Bounce.inOut'
     })
   })
 }
@@ -282,7 +332,7 @@ const loadOfficeBuild = () => {
  */
 const officeMouseMove = () => {
   // TODO: 做一个节流
-  viewer.startSelectEvent("mousemove", false, (model) => {
+  viewer.startSelectEvent('mousemove', false, (model) => {
     if (curFloorName) {
       viewer.stopSelectEvent()
     }
@@ -297,7 +347,7 @@ const officeMouseMove = () => {
           officeBuild.object.getObjectByName(item).traverse((child) => {
             if (child.isMesh) {
               child.material = new THREE.MeshPhongMaterial({
-                color: "yellow",
+                color: 'yellow',
                 transparent: true,
                 opacity: 0.8,
                 emissive: child.material.color, // 设置材质颜色
@@ -349,45 +399,51 @@ const officeFloorClick = () => {
     const intersects = rayCaster.intersectObject(viewer.scene, true) // 计算物体和射线的焦点
     if (intersects.length > 0 && modelMoveName) {
       const model = intersects[0].object.parent
-      if (model.name.includes("zuo")) {
+      if (model.name.includes('zuo')) {
         if (!isSplit) {
           // 隐藏车和标签
           // TODO: 找到更方便的模型指定方式，而不是每次都遍历查找
           carLabel.visible = false
           officeLabel.visible = false
-          viewer.scene.children.find(item => item.name === "快递车").visible = false
-          viewer.scene.children.find(o => o.name == 'cityv1').visible = false
-          viewer.scene.children.find(o => o.name == '树').visible = false
+          viewer.scene.children.find(
+            (item) => item.name === '快递车'
+          ).visible = false
+          viewer.scene.children.find((o) => o.name == 'cityv1').visible = false
+          viewer.scene.children.find((o) => o.name == '树').visible = false
           // 实验楼材质变化
-          sceneList.forEach(item => {
-            viewer.scene.children.find(o => o.name == item).traverse((child) => {
-              child.material = new THREE.MeshPhongMaterial({
-                color: new THREE.Color('rgba(7,32,96,0.76)'),
-                transparent: true,
-                opacity: 0.1,
-                wireframe: true,
-                depthWrite: true, // 无法被选择，鼠标穿透
+          sceneList.forEach((item) => {
+            viewer.scene.children
+              .find((o) => o.name == item)
+              .traverse((child) => {
+                child.material = new THREE.MeshPhongMaterial({
+                  color: new THREE.Color('rgba(7,32,96,0.76)'),
+                  transparent: true,
+                  opacity: 0.1,
+                  wireframe: true,
+                  depthWrite: true // 无法被选择，鼠标穿透
+                })
               })
-            })
           })
-          gsap.to(viewer.scene.children.find(o => o.name === "人").rotation, {
+          gsap.to(viewer.scene.children.find((o) => o.name === '人').rotation, {
             y: Math.PI, // 旋转角度
             duration: 2,
-            ease: "power1.inOut",
+            ease: 'power1.inOut',
             onComplete: () => {
               isSplit = true
-            },
+            }
           })
         }
         selectOffice(model)
       } else {
         if (!isSplit) {
           const oldModel = oldOfficeBuild.getObjectByName(modelMoveName)
-          officeBuild.object.getObjectByName(modelMoveName).traverse(function (child) {
-            if (child.isMesh) {
-              child.material = oldModel.getObjectByName(child.name).material
-            }
-          })
+          officeBuild.object
+            .getObjectByName(modelMoveName)
+            .traverse(function (child) {
+              if (child.isMesh) {
+                child.material = oldModel.getObjectByName(child.name).material
+              }
+            })
         }
       }
     }
@@ -398,14 +454,16 @@ const selectOffice = (model) => {
   curFloorName = model.name
   const oldModel = oldOfficeBuild.getObjectByName(curFloorName)
   // 找到当前点击的楼层
-  const modelSelectIndex = officeFloorList.findIndex(item => item === curFloorName)
+  const modelSelectIndex = officeFloorList.findIndex(
+    (item) => item === curFloorName
+  )
   if (modelSelectIndex === lastIndex) return
   if (!isSplit) {
     // 楼体还未分层的时候要做的事
     officeBuild.object.children.forEach((child, index) => {
       if (child.name === curFloorName) {
         // 当前楼层附着原本材质
-        child.children.forEach(ol => {
+        child.children.forEach((ol) => {
           ol.material = oldModel.getObjectByName(ol.name).material
         })
       }
@@ -430,7 +488,7 @@ const selectOffice = (model) => {
         gsap.to(child.position, {
           y: child.position.y + index * 10,
           duration: 2,
-          ease: "power1.inOut",
+          ease: 'power1.inOut'
         })
       }
 
@@ -467,21 +525,19 @@ const selectOffice = (model) => {
         gsap.to(child.position, {
           z: child.position.z + 40,
           duration: 2,
-          ease: "power1.inOut",
+          ease: 'power1.inOut'
         })
       }
       if (child.name === curFloorName) {
         gsap.to(child.position, {
           z: child.position.z - 40,
           duration: 2,
-          ease: "power1.inOut",
+          ease: 'power1.inOut',
           onComplete: () => {
             lastIndex = index
-
           }
         })
       }
-
     })
   }
 
@@ -490,10 +546,9 @@ const selectOffice = (model) => {
     y: 0,
     z: -5,
     duration: 2,
-    ease: "power1.inOut",
-    onComplete: () => {
-    },
-  });
+    ease: 'power1.inOut',
+    onComplete: () => { }
+  })
   // gsap.to(viewer.camera.position, {
   //   x: 12,
   //   y: 18,
@@ -508,7 +563,7 @@ const selectOffice = (model) => {
  * 加载实验楼
  */
 const loadLaboratoryBuild = () => {
-  modelLoader.loadModelToScene('/glTF/laboratoryBuild.gltf', model => {
+  modelLoader.loadModelToScene('/glTF/laboratoryBuild.gltf', (model) => {
     model.openCastShadow()
     model.openReceiveShadow()
     model.object.rotateY(Math.PI / 2)
@@ -517,11 +572,14 @@ const loadLaboratoryBuild = () => {
     model.object.name = '实验楼'
     laboratoryBuild = model.object.clone()
     const bbox = model.getBox()
-    labelIns.addCss2dLabel({
-      x: bbox.max.x,
-      y: bbox.max.y,
-      z: bbox.max.z
-    }, `<span class="label">${model.object.name}</span>`)
+    labelIns.addCss2dLabel(
+      {
+        x: bbox.max.x,
+        y: bbox.max.y,
+        z: bbox.max.z
+      },
+      `<span class="label">${model.object.name}</span>`
+    )
 
     // 添加标签动画
     gsap.to(labelIns.label.position, {
@@ -529,16 +587,15 @@ const loadLaboratoryBuild = () => {
       repeat: -1, // 循环播放
       yoyo: true, // 循环播放
       duration: 2, // 播放时间
-      ease: "Bounce.inOut",
+      ease: 'Bounce.inOut'
     })
-
   })
 }
 /**
  * 加载车辆
  */
 const loadCar = () => {
-  modelLoader.loadModelToScene('/glTF/car13.gltf', model => {
+  modelLoader.loadModelToScene('/glTF/car13.gltf', (model) => {
     car = model
     model.openCastShadow()
     model.openReceiveShadow()
@@ -547,18 +604,21 @@ const loadCar = () => {
     model.object.name = '快递车'
     let boxx = model.getBox()
     // 加载车的标签
-    carLabel = labelIns.addCss2dLabel({
-      x: boxx.max.x,
-      y: boxx.max.y + 2,
-      z: boxx.max.z
-    }, `<span class="label">${model.object.name}</span>`)
+    carLabel = labelIns.addCss2dLabel(
+      {
+        x: boxx.max.x,
+        y: boxx.max.y + 2,
+        z: boxx.max.z
+      },
+      `<span class="label">${model.object.name}</span>`
+    )
   })
 }
 /**
  * 加载树
  */
 const loadTree = () => {
-  modelLoader.loadModelToScene('glTF/tree_animate/new-scene.gltf', model => {
+  modelLoader.loadModelToScene('glTF/tree_animate/new-scene.gltf', (model) => {
     model.openCastShadow()
     model.object.position.set(8, 0, 16)
     model.object.scale.set(0.08, 0.08, 0.08)
@@ -576,29 +636,32 @@ const moveOnCurve = (model) => {
       let carObj = model.object
       let boxx = model.getBox()
       carLabel.position.set(boxx.max.x, boxx.max.y + 2, boxx.max.z)
-      if (carObj.position.z.toFixed(2) >= 28.00 && carObj.position.z.toFixed(2) <= 28.10) {
+      if (
+        carObj.position.z.toFixed(2) >= 28.0 &&
+        carObj.position.z.toFixed(2) <= 28.1
+      ) {
         if (isopen.value) {
           gsap.to(Mesh26.scale, {
             x: Mesh26.scale.x * 8,
             duration: 5,
-            ease: "power1.inOut",
+            ease: 'power1.inOut',
             onComplete: () => {
               isopen.value = false
-            },
+            }
           })
         } else {
           gsap.to(Mesh26.scale, {
             x: Mesh26.scale.x / 8,
             duration: 5,
-            ease: "power1.inOut",
+            ease: 'power1.inOut',
             onComplete: () => {
               isopen.value = true
               viewer.addAnimate(timeen)
             },
             onStart: () => {
               viewer.removeAnimate(timeen)
-            },
-          });
+            }
+          })
         }
       }
 
@@ -619,13 +682,17 @@ const moveOnCurve = (model) => {
         const offsetAngle = 22 // 目标移动时的朝向偏移
         const mtx = new THREE.Matrix4() // 创建一个4维矩阵
         mtx.lookAt(carObj.position, pointBox, carObj.up) // 设置朝向
-        mtx.multiply(new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(0, offsetAngle, 0)))
-        const toRot = new THREE.Quaternion().setFromRotationMatrix(mtx)  //计算出需要进行旋转的四元数值
+        mtx.multiply(
+          new THREE.Matrix4().makeRotationFromEuler(
+            new THREE.Euler(0, offsetAngle, 0)
+          )
+        )
+        const toRot = new THREE.Quaternion().setFromRotationMatrix(mtx) //计算出需要进行旋转的四元数值
         carObj.quaternion.slerp(toRot, 0.2)
       }
-      progress += velocity;
+      progress += velocity
     } else {
-      progress = 0;
+      progress = 0
     }
   }
 }
@@ -636,18 +703,18 @@ const makeCurve = () => {
     new THREE.Vector3(11.5, 0, 34),
     new THREE.Vector3(35, 0, 34),
     new THREE.Vector3(35, 0, 31),
-    new THREE.Vector3(11.5, 0, 31),
+    new THREE.Vector3(11.5, 0, 31)
   ])
-  curve.curveType = "catmullrom" // 曲线类型
+  curve.curveType = 'catmullrom' // 曲线类型
   curve.closed = true // 是否封闭曲线
   curve.tension = 0 // 设置线的张力，0为无弧度折线
 
   // 为曲线添加材质在场景中显示出来，不显示也不会影响运动轨迹，相当于一个Helper
-  const points = curve.getPoints(0.1); // 获取曲线上的点
-  const geometry = new THREE.BufferGeometry().setFromPoints(points); // 创建几何体
-  const material = new THREE.LineBasicMaterial({ color: 0xff0000 }); // 线材质
-  const curveObject = new THREE.Line(geometry, material); // 线
-  curveObject.position.y = -1;
+  const points = curve.getPoints(0.1) // 获取曲线上的点
+  const geometry = new THREE.BufferGeometry().setFromPoints(points) // 创建几何体
+  const material = new THREE.LineBasicMaterial({ color: 0xff0000 }) // 线材质
+  const curveObject = new THREE.Line(geometry, material) // 线
+  curveObject.position.y = -1
   viewer.scene.add(curveObject)
 }
 const onReset = () => {
@@ -656,29 +723,33 @@ const onReset = () => {
     y: 10,
     z: 52,
     duration: 2,
-    ease: "Bounce.inOut",
-  });
-  gsap.to(viewer.scene.children.find(o => o.name == '人').rotation, {
+    ease: 'Bounce.inOut'
+  })
+  gsap.to(viewer.scene.children.find((o) => o.name == '人').rotation, {
     y: 0,
     duration: 2,
-    ease: "power1.inOut",
-  });
+    ease: 'power1.inOut'
+  })
   carLabel.visible = true
   officeLabel.visible = true
-  viewer.scene.children.find(o => o.name === '快递车').visible = true
-  viewer.scene.children.find(o => o.name === '树').visible = true
-  viewer.scene.children.find(o => o.name === 'cityv1').visible = true
-  viewer.scene.children[viewer.scene.children.findIndex(o => o.name == '实验楼')] = laboratoryBuild.clone()
-  viewer.scene.children[viewer.scene.children.findIndex(o => o.name == '办公大厅')] = officeBuild.object = oldOfficeBuild.clone()
-  curFloorName = ""
+  viewer.scene.children.find((o) => o.name === '快递车').visible = true
+  viewer.scene.children.find((o) => o.name === '树').visible = true
+  viewer.scene.children.find((o) => o.name === 'cityv1').visible = true
+  viewer.scene.children[
+    viewer.scene.children.findIndex((o) => o.name == '实验楼')
+  ] = laboratoryBuild.clone()
+  viewer.scene.children[
+    viewer.scene.children.findIndex((o) => o.name == '办公大厅')
+  ] = officeBuild.object = oldOfficeBuild.clone()
+  curFloorName = ''
   modelMoveName = null
   isSplit = false
   lastIndex = null
-  selectedFloorName = ""
+  selectedFloorName = ''
   officeMouseMove()
 }
 </script>
-<style lang='less' scoped>
+<style lang="less" scoped>
 #container {
   height: 100vh;
   width: 100%;
@@ -718,7 +789,7 @@ const onReset = () => {
   margin: 0 auto;
   top: 15%;
   text-align: center;
-  background-color: rgba(255, 255, 255, .5);
+  background-color: rgba(255, 255, 255, 0.5);
   padding: 10px;
 }
 
