@@ -27,6 +27,7 @@ import SkyBoxs from '@/common/threeModules/SkyBoxs'
 import Lights from '@/common/threeModules/Lights'
 import ModelLoader from '@/common/threeModules/ModelLoader'
 import Labels from '@/common/threeModules/Labels'
+import { Water } from 'three/examples/jsm/objects/Water2'
 import gsap from 'gsap'
 
 let viewer = null
@@ -135,6 +136,8 @@ const init = () => {
   loadPeople()
   // 加载树
   loadTree()
+  // 加载水池
+  loadSwimmingPool()
   // 办公楼鼠标移动效果
   officeMouseMove()
   // 办公楼点击
@@ -607,6 +610,55 @@ const loadTree = () => {
     model.object.name = '树'
     model.startAnimal()
   })
+}
+
+/**
+ * 加载水池
+ */
+const loadSwimmingPool = () => {
+  modelLoader.loadModelToScene('/glb/pool.glb', (model) => {
+    model.openCastShadow()
+    model.openReceiveShadow()
+    model.object.position.set(16, 0.4, -16)
+    model.object.scale.set(0.025, 0.025, 0.025)
+    model.object.name = '水池'
+    const waterGeo1 = viewer.scene
+      .getObjectByName('水池')
+      .getObjectByName('Water001_Groff_water_mat_0').geometry
+    const waterGeo2 = viewer.scene
+      .getObjectByName('水池')
+      .getObjectByName('HotTubWater_water_mat_0').geometry
+    const waterMat1 = setWaterPlane(waterGeo1)
+    const waterMat2 = setWaterPlane(waterGeo2)
+
+    waterMat1.position.set(15.5, 0.3, -16.5)
+    waterMat2.position.set(9.5, 1.2, -19.5)
+    viewer.scene.add(waterMat1)
+    viewer.scene.add(waterMat2)
+    viewer.scene
+      .getObjectByName('水池')
+      .getObjectByName('Water001_Groff_water_mat_0').visible = false
+    viewer.scene
+      .getObjectByName('水池')
+      .getObjectByName('HotTubWater_water_mat_0').visible = false
+  })
+}
+
+const setWaterPlane = (waterGeo) => {
+  const waterTexLoader = new THREE.TextureLoader()
+
+  const waterMat = new Water(waterGeo, {
+    textureWidth: 1024,
+    textureHeight: 1024,
+    color: 0xeeeeff,
+    flowDirection: new THREE.Vector2(1, 1),
+    scale: 2,
+    normalMap0: waterTexLoader.load('/images/Water_1_M_Normal.jpg'),
+    normalMap1: waterTexLoader.load('/images/Water_2_M_Normal.jpg')
+  })
+  waterMat.scale.set(0.025, 1, 0.025)
+  waterMat.rotation.set(0, Math.PI, 0)
+  return waterMat
 }
 
 /**
