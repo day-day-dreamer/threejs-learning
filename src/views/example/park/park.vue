@@ -27,6 +27,10 @@ import SkyBoxs from '@/common/threeModules/SkyBoxs'
 import Lights from '@/common/threeModules/Lights'
 import ModelLoader from '@/common/threeModules/ModelLoader'
 import Labels from '@/common/threeModules/Labels'
+import { Water } from 'three/examples/jsm/objects/Water2'
+import { SimplifyModifier } from 'three/examples/jsm/modifiers/SimplifyModifier'
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
+
 import gsap from 'gsap'
 
 let viewer = null
@@ -89,27 +93,13 @@ const init = () => {
     intensity: 3,
     castShadow: true // 是否投射阴影
   })
-
-  const addSpotLight = (x, y, z, index) => {
-    const spotLight = new THREE.SpotLight()
-    spotLight.name = `SpotLight_${index}`
-    spotLight.position.set(x, y, z)
-    // spotLight.castShadow = true;
-    const temTarget = new THREE.Object3D()
-    y -= 2
-    temTarget.position.set(x, y, z)
-    spotLight.target = temTarget
-    spotLight.penumbra = 0.8
-    spotLight.visible = false
-    viewer.scene.add(spotLight)
-    const spotlightHelper = new THREE.SpotLightHelper(spotLight)
-    spotlightHelper.visible = false
-    viewer.scene.add(spotlightHelper)
-  }
-  addSpotLight(22.5, 32, -30, 0)
-  addSpotLight(10, 32, -30, 1)
-  addSpotLight(-2.5, 32, -30, 2)
-  addSpotLight(-15, 32, -30, 3)
+  const spotLights = new THREE.Group()
+  spotLights.name = 'SpotLights'
+  spotLights.add(initSpotLight(10, 32, -30))
+  spotLights.add(initSpotLight(-2.5, 32, -30))
+  spotLights.add(initSpotLight(-15, 32, -30))
+  spotLights.add(initSpotLight(22.5, 32, -30))
+  viewer.scene.add(spotLights)
 
   modelLoader = new ModelLoader(viewer)
 
@@ -137,6 +127,8 @@ const init = () => {
   loadLamp()
   // 加载树
   loadTree()
+  // 加载水池
+  loadSwimmingPool()
   // 办公楼鼠标移动效果
   officeMouseMove()
   // 办公楼点击
@@ -179,6 +171,33 @@ const initVideoTexture = () => {
   video.muted = 'muted'
   videoTextTure = new THREE.VideoTexture(video)
 }
+
+/**
+ * 加载聚光灯
+ */
+const initSpotLight = (x, y, z) => {
+  const spotLightGroup = new THREE.Group()
+  const spotLight = new THREE.SpotLight()
+  const spotLightHelper = new THREE.SpotLightHelper(spotLight)
+  spotLightGroup.add(spotLight)
+  spotLightGroup.add(spotLightHelper)
+
+  spotLight.position.set(x, y, z)
+  // spotLight.castShadow = true;
+  const tempTarget = new THREE.Object3D()
+  y -= 2
+  tempTarget.position.set(x, y, z)
+  spotLight.target = tempTarget
+
+  spotLight.penumbra = 0.8
+  spotLight.intensity = 0.4
+
+  spotLight.visible = false
+  spotLightHelper.visible = false
+
+  return spotLightGroup
+}
+
 /**
  * 加载人
  */
@@ -564,14 +583,38 @@ const selectOffice = (model) => {
  */
 const loadLaboratoryBuild = () => {
   modelLoader.loadModelToScene('/glTF/laboratoryBuild.gltf', (model) => {
-    model.openCastShadow()
-    model.openReceiveShadow()
+    // 合批
+    const geometryArr = []
+    const materialArr = []
+    // 获取几何体/材质数组
+    model.object.traverse((item) => {
+      item.updateMatrixWorld(true)
+      if (item.isMesh) {
+        item.geometry.applyMatrix4(item.matrixWorld)
+        geometryArr.push(item.geometry)
+        materialArr.push(item.material)
+      }
+    })
+    const geometryMerged = BufferGeometryUtils.mergeGeometries(
+      geometryArr,
+      true
+    )
+
+    const meshMerged = new THREE.Mesh(geometryMerged, materialArr)
+
+    model.object.remove(model.object.children[0])
+    model.object.add(meshMerged)
+
+    model.object.castShadow = true
+    model.object.receiveShadow = true
     model.object.rotateY(Math.PI / 2)
     model.object.position.set(-17, 0, 5)
     model.object.scale.set(0.7, 0.7, 0.7)
     model.object.name = '实验楼'
+
     laboratoryBuild = model.object.clone()
     const bbox = model.getBox()
+
     labelIns.addCss2dLabel(
       {
         x: bbox.max.x,
@@ -624,6 +667,34 @@ const loadTree = () => {
     model.object.scale.set(0.08, 0.08, 0.08)
     model.object.name = '树'
     model.startAnimal()
+  })
+}
+
+/**
+ * 加载水池
+ */
+const loadSwimmingPool = () => {
+  modelLoader.loadModelToScene('/glb/pool.glb', (model) => {
+    model.openCastShadow()
+    model.openReceiveShadow()
+    model.object.position.set(12, 1, -16)
+    model.object.scale.set(0.6, 0.5, 0.6)
+    model.object.name = '水池'
+
+    const waterTexLoader = new THREE.TextureLoader()
+    const oldWater = model.object.getObjectByName('voda_0')
+    const waterMesh = new Water(oldWater.children[0].geometry, {
+      textureWidth: 512,
+      textureHeight: 512,
+      color: 0xeeeeff,
+      flowDirection: new THREE.Vector2(1, 1),
+      scale: 1,
+      normalMap0: waterTexLoader.load('/images/Water_1_M_Normal.jpg'),
+      normalMap1: waterTexLoader.load('/images/Water_2_M_Normal.jpg')
+    })
+    waterMesh.name = '动态水'
+    oldWater.remove(oldWater.children[0])
+    oldWater.add(waterMesh)
   })
 }
 
