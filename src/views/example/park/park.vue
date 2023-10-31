@@ -80,6 +80,11 @@ const init = () => {
   viewer.camera.position.set(17, 10, 52)
   viewer.controls.maxPolarAngle = Math.PI / 2.1 // 限制controls的上下角度范围
 
+  // viewer.renderer.setPixelRatio(window.devicePixelRatio * 2)
+
+  viewer.renderer.shadowMap.enabled = true
+  viewer.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+
   const lights = new Lights(viewer)
   const ambientLight = lights.addAmbientLight() // 添加环境光
   ambientLight.setOption({
@@ -228,6 +233,9 @@ const initFence = () => {
               isopen.value = true
             }
           })
+        }
+        if (item.isMesh) {
+          item.material.shadowSide = THREE.BackSide
         }
       })
       timeen = {
@@ -583,8 +591,8 @@ const loadLaboratoryBuild = () => {
     model.object.remove(model.object.children[0])
     model.object.add(meshMerged)
 
-    model.object.castShadow = true
-    model.object.receiveShadow = true
+    meshMerged.castShadow = true
+    meshMerged.receiveShadow = true
     model.object.rotateY(Math.PI / 2)
     model.object.position.set(-17, 0, 5)
     model.object.scale.set(0.7, 0.7, 0.7)
@@ -635,11 +643,11 @@ const loadCar = () => {
 
     spotLight.castShadow = true
     spotLight.shadow.radius = 5
-    spotLight.shadow.mapSize.width = 512
-    spotLight.shadow.mapSize.height = 512
+    spotLight.shadow.mapSize.width = 1024
+    spotLight.shadow.mapSize.height = 1024
     spotLight.shadow.camera.near = 0.1
     spotLight.shadow.camera.far = 100
-    // spotLight.shadow.camera.bias = 0.00001 // 去除伪影
+    spotLight.shadow.camera.bias = -0.0001 // 去除摩尔纹、伪影
 
     spotLight.visible = false
 
