@@ -234,9 +234,6 @@ const initFence = () => {
             }
           })
         }
-        if (item.isMesh) {
-          item.material.shadowSide = THREE.BackSide
-        }
       })
       timeen = {
         fun: moveOnCurve,
@@ -638,16 +635,17 @@ const loadCar = () => {
     model.object.add(spotLight.target)
 
     spotLight.angle = Math.PI / 4
-    spotLight.position.set(0, 2, 1)
-    spotLight.target.position.set(0, 2, 2)
+    spotLight.position.set(0, 2, 2)
+    spotLight.target.position.set(0, 1, 3)
+    spotLight.penumbra = 0.8
 
     spotLight.castShadow = true
-    spotLight.shadow.radius = 5
+    // spotLight.shadow.radius = 5 // PCFSS不支持radius
     spotLight.shadow.mapSize.width = 1024
     spotLight.shadow.mapSize.height = 1024
     spotLight.shadow.camera.near = 0.1
     spotLight.shadow.camera.far = 100
-    spotLight.shadow.camera.bias = -0.0001 // 去除摩尔纹、伪影
+    spotLight.shadow.camera.bias = 0.005 // 去除摩尔纹、伪影
 
     spotLight.visible = false
 
