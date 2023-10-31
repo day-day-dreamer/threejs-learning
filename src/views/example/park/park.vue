@@ -80,6 +80,11 @@ const init = () => {
   viewer.camera.position.set(17, 10, 52)
   viewer.controls.maxPolarAngle = Math.PI / 2.1 // 限制controls的上下角度范围
 
+  // viewer.renderer.setPixelRatio(window.devicePixelRatio * 2)
+
+  viewer.renderer.shadowMap.enabled = true
+  viewer.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+
   const lights = new Lights(viewer)
   const ambientLight = lights.addAmbientLight() // 添加环境光
   ambientLight.setOption({
@@ -141,7 +146,7 @@ const onChangeTime = () => {
     'DirectionalLight'
   )
   const spotLights = viewer.scene.getObjectsByProperty('type', 'SpotLight')
-  console.log(viewer.scene)
+  // console.log(viewer.scene)
   if (timeText.value === TimeNums.night) {
     skyBoxs.setSkybox('night')
     timeText.value = '白天模式'
@@ -181,16 +186,12 @@ const initSpotLight = (x, y, z) => {
   const spotLightHelper = new THREE.SpotLightHelper(spotLight)
   spotLightGroup.add(spotLight)
   spotLightGroup.add(spotLightHelper)
+  spotLightGroup.add(spotLight.target)
 
-  spotLight.position.set(x, y, z)
   // spotLight.castShadow = true;
-  const tempTarget = new THREE.Object3D()
-  y -= 2
-  tempTarget.position.set(x, y, z)
-  spotLight.target = tempTarget
-
+  spotLight.position.set(x, y, z)
+  spotLight.target.position.set(x, y - 2, z - 1)
   spotLight.penumbra = 0.8
-  spotLight.intensity = 0.4
 
   spotLight.visible = false
   spotLightHelper.visible = false
@@ -296,7 +297,7 @@ const loadBillBoard = () => {
  */
 const loadOfficeBuild = () => {
   modelLoader.loadModelToScene('/glb/officeBuild.glb', (model) => {
-    console.log('----model----', model)
+    // console.log('----model----', model)
     officeBuild = model
     officeBuild.openCastShadow()
     officeBuild.openReceiveShadow()
@@ -605,8 +606,8 @@ const loadLaboratoryBuild = () => {
     model.object.remove(model.object.children[0])
     model.object.add(meshMerged)
 
-    model.object.castShadow = true
-    model.object.receiveShadow = true
+    meshMerged.castShadow = true
+    meshMerged.receiveShadow = true
     model.object.rotateY(Math.PI / 2)
     model.object.position.set(-17, 0, 5)
     model.object.scale.set(0.7, 0.7, 0.7)
@@ -645,6 +646,27 @@ const loadCar = () => {
     model.object.position.set(11.5, 0, 18)
     model.object.scale.set(1, 1, 1)
     model.object.name = '快递车'
+
+    const spotLight = new THREE.SpotLight()
+
+    model.object.add(spotLight)
+    model.object.add(spotLight.target)
+
+    spotLight.angle = Math.PI / 4
+    spotLight.position.set(0, 2, 2)
+    spotLight.target.position.set(0, 1, 3)
+    spotLight.penumbra = 0.8
+
+    spotLight.castShadow = true
+    // spotLight.shadow.radius = 5 // PCFSS不支持radius
+    spotLight.shadow.mapSize.width = 1024
+    spotLight.shadow.mapSize.height = 1024
+    spotLight.shadow.camera.near = 0.1
+    spotLight.shadow.camera.far = 100
+    spotLight.shadow.camera.bias = 0.005 // 去除摩尔纹、伪影
+
+    spotLight.visible = false
+
     let boxx = model.getBox()
     // 加载车的标签
     carLabel = labelIns.addCss2dLabel(
