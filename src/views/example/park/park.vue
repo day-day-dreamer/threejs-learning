@@ -55,6 +55,7 @@ let selectedFloorName = '' // 已经选中过的楼层name
 let isSplit = false // 楼体是否分层
 let lastIndex // 记录上一次点击的楼层index
 let skyBoxs = null
+let sky = null
 const sceneList = ['实验楼']
 const TimeNums = {
   day: '白天模式',
@@ -568,7 +569,7 @@ const selectOffice = (model) => {
     z: -5,
     duration: 2,
     ease: 'power1.inOut',
-    onComplete: () => { }
+    onComplete: () => {}
   })
   // gsap.to(viewer.camera.position, {
   //   x: 12,
