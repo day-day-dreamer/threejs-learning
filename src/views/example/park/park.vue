@@ -28,6 +28,7 @@ import Lights from '@/common/threeModules/Lights'
 import ModelLoader from '@/common/threeModules/ModelLoader'
 import Labels from '@/common/threeModules/Labels'
 import { Water } from 'three/examples/jsm/objects/Water2'
+import { Sky } from 'three/examples/jsm/objects/Sky'
 import { SimplifyModifier } from 'three/examples/jsm/modifiers/SimplifyModifier'
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 
