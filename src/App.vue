@@ -5,9 +5,7 @@
  * @LastEditors: 笙痞77
  * @LastEditTime: 2023-05-05 14:20:00
 -->
-<script setup>
-
-</script>
+<script setup></script>
 <template>
   <el-container>
     <el-aside>

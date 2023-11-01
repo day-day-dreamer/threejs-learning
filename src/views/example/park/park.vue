@@ -3,7 +3,7 @@
  * @Author: 笙痞77
  * @Date: 2023-08-28 16:06:00
  * @LastEditors: 笙痞77
- * @LastEditTime: 2023-09-14 10:57:30
+ * @LastEditTime: 2023-11-01 11:07:42
 -->
 <template>
   <div id="jindu-text-con" v-if="progressBarShow">
@@ -28,8 +28,6 @@ import Lights from '@/common/threeModules/Lights'
 import ModelLoader from '@/common/threeModules/ModelLoader'
 import Labels from '@/common/threeModules/Labels'
 import { Water } from 'three/examples/jsm/objects/Water2'
-import { Sky } from 'three/examples/jsm/objects/Sky'
-import { SimplifyModifier } from 'three/examples/jsm/modifiers/SimplifyModifier'
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 
 import gsap from 'gsap'
@@ -47,7 +45,6 @@ let timeen = {}
 let modelLoader = null
 let labelIns = null // 标签实例
 let laboratoryBuild = {}
-let laboratoryBuildClone = {}
 let videoTextTure = null // 视频纹理
 let curFloorName = '' // 当前鼠标点击选中的楼层name
 let modelMoveName = '' // 当前鼠标移动过程中选中的模型name
@@ -55,7 +52,6 @@ let selectedFloorName = '' // 已经选中过的楼层name
 let isSplit = false // 楼体是否分层
 let lastIndex // 记录上一次点击的楼层index
 let skyBoxs = null
-let sky = null
 const sceneList = ['实验楼']
 const TimeNums = {
   day: '白天模式',
